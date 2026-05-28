@@ -11,7 +11,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: sudo apt-get install -y --no-install-recommends bedtools samtools
+        with:
+          components: rustfmt, clippy
+      - run: sudo apt-get install -y --no-install-recommends bedtools
       - run: cargo fmt -- --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test
+
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.91
+      - run: cargo check
