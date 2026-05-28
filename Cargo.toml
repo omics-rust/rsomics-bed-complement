@@ -1,0 +1,28 @@
+[package]
+name = "rsomics-bed-complement"
+version = "0.1.0"
+description = "Compute the complement of a BED file — intervals not covered by any feature (bedtools complement equivalent)"
+edition = "2024"
+rust-version = "1.91"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/omics-rust/rsomics-bed-complement"
+authors = ["Zane Leong <efd@live.com>"]
+categories = ["science", "command-line-utilities"]
+keywords = ["bed", "complement", "bioinformatics", "bedtools", "genomics"]
+
+[[bin]]
+name = "rsomics-bed-complement"
+path = "src/main.rs"
+
+[lib]
+name = "rsomics_bed_complement"
+path = "src/lib.rs"
+doctest = false
+
+[dependencies]
+rsomics-common = { version = "0.6" }
+rsomics-help = { version = "0.3" }
+clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = "3"
