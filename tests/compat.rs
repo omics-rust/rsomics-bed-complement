@@ -66,6 +66,21 @@ fn empty_input_gives_full_chromosomes() {
     assert!(result.contains("chr3\t0\t500"), "chr3 full: {result}");
 }
 
+// Always-run lane: the binary's output, diffed against the bedtools complement
+// output committed under tests/golden, so CI checks compatibility without bedtools.
+#[test]
+fn matches_golden() {
+    let out = Command::new(env!("CARGO_BIN_EXE_rsomics-bed-complement"))
+        .arg("-g")
+        .arg(golden("genome.txt"))
+        .arg(golden("input.bed"))
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let want = std::fs::read_to_string(golden("complement.out")).unwrap();
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), want);
+}
+
 #[test]
 fn bedtools_compat() {
     let bedtools = Command::new("bedtools").arg("--version").output();
