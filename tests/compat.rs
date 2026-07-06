@@ -66,19 +66,47 @@ fn empty_input_gives_full_chromosomes() {
     assert!(result.contains("chr3\t0\t500"), "chr3 full: {result}");
 }
 
-// Always-run lane: the binary's output, diffed against the bedtools complement
-// output committed under tests/golden, so CI checks compatibility without bedtools.
-#[test]
-fn matches_golden() {
-    let out = Command::new(env!("CARGO_BIN_EXE_rsomics-bed-complement"))
+fn run(input: &str) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_rsomics-bed-complement"))
         .arg("-g")
         .arg(golden("genome.txt"))
-        .arg(golden("input.bed"))
+        .arg(golden(input))
         .output()
-        .unwrap();
+        .unwrap()
+}
+
+// Always-run lanes: the binary's output diffed against committed bedtools output,
+// so CI checks compatibility without bedtools at test time.
+#[test]
+fn matches_golden() {
+    let out = run("input.bed");
     assert!(out.status.success());
     let want = std::fs::read_to_string(golden("complement.out")).unwrap();
     assert_eq!(String::from_utf8(out.stdout).unwrap(), want);
+}
+
+// Zero-length features are virtually widened to [start-1, end+1), matching bedtools.
+#[test]
+fn matches_golden_zerolen() {
+    let out = run("zerolen.bed");
+    assert!(out.status.success());
+    let want = std::fs::read_to_string(golden("zerolen.out")).unwrap();
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), want);
+}
+
+// bedtools exits 1 with no output on these; so must we.
+#[test]
+fn fail_loud_on_malformed() {
+    for input in ["unsorted.bed", "absent_chrom.bed", "start_gt_end.bed"] {
+        let out = run(input);
+        assert!(!out.status.success(), "{input}: expected non-zero exit");
+        assert!(out.stdout.is_empty(), "{input}: expected no stdout");
+        assert_ne!(
+            out.status.code(),
+            Some(101),
+            "{input}: must not panic (exit 101)"
+        );
+    }
 }
 
 #[test]

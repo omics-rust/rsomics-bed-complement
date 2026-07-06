@@ -1,6 +1,6 @@
 [package]
 name = "rsomics-bed-complement"
-version = "0.1.1"
+version = "0.1.2"
 description = "Compute the complement of a BED file — intervals not covered by any feature (bedtools complement equivalent)"
 edition = "2024"
 rust-version = "1.91"
