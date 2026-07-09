@@ -40,9 +40,16 @@ impl Tool for Cli {
 
         let mut stdout_lock;
         let mut file_out;
+        let mut sink;
+        // Under --json the framework owns stdout with the result envelope, so the
+        // BED stream must not be written there too. Route it to -o when given,
+        // otherwise to a sink so the envelope is the sole stdout output.
         let out: &mut dyn io::Write = if let Some(ref p) = self.output {
             file_out = std::fs::File::create(p).map_err(rsomics_common::RsomicsError::Io)?;
             &mut file_out
+        } else if self.common.json {
+            sink = io::sink();
+            &mut sink
         } else {
             stdout_lock = io::stdout().lock();
             &mut stdout_lock
